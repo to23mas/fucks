@@ -1,2 +1,7 @@
 django_project/__pycache__
 hello_world/__pycache__
+crossroad/__pycache__
+crossroad/migrations/__pycache__
+hello_world/migrations/__pycache__
+habit_tracker_1/migrations/__pycache__
+habit_tracker_1/__pycache__
