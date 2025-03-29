@@ -5,3 +5,7 @@ crossroad/migrations/__pycache__
 hello_world/migrations/__pycache__
 habit_tracker_1/migrations/__pycache__
 habit_tracker_1/__pycache__
+habit_tracker_2/__pycache__
+habit_tracker_2/migrations/__pycache__
+node_modules
+public/static
