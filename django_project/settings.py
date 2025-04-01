@@ -41,6 +41,14 @@ INSTALLED_APPS = [
     "crossroad",
     "habit_tracker_1", # nové
     "habit_tracker_2", # nové
+    "blog",
+    "tailwind",
+    "theme",
+    "django_browser_reload",
+]
+TAILWIND_APP_NAME = 'theme'
+INTERNAL_IPS = [
+    "127.0.0.1",
 ]
 
 MIDDLEWARE = [
@@ -51,6 +59,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 
 ROOT_URLCONF = "django_project.urls"
