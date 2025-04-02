@@ -26,7 +26,8 @@ services:
     command: >  # Příkaz k provedení migrací v Django
       sh -c "
              python manage.py makemigrations &&
-             python manage.py migrate"
+             python manage.py migrate &&
+             python manage.py createsuperuser --username admin --email admin@admin.com --noinput ;echo 0"
     depends_on:
       database:
         condition: service_healthy  # Spustí se až po ověření, že databáze je dostupná

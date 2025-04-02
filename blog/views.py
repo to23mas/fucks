@@ -1,7 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Post, Category
 from .forms import PostForm, CategoryForm
+from django.contrib.auth.decorators import user_passes_test
 
+
+def is_staff_user(user):
+	return user.is_staff
 
 # Zobrazení seznamu všech příspěvků
 # Umožňuje filtrování podle kategorií pomocí GET parametru
@@ -85,6 +89,7 @@ def post_delete(request, pk):
 	return redirect("blog:post_list")
 
 
+@user_passes_test(is_staff_user)
 def category_list(request):
 	# Načtení všech kategorií
 	categories = Category.objects.all()
@@ -94,6 +99,7 @@ def category_list(request):
 
 # Detail kategorie podle jména
 # Pokud kategorie neexistuje, vrátí 404
+@user_passes_test(is_staff_user)
 def category_detail(request, pk):
 	# Načtení kategorie podle jména nebo 404
 	category = get_object_or_404(Category, name=pk)

@@ -39,14 +39,33 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "hello_world",
     "crossroad",
-    "habit_tracker_1", # nové
-    "habit_tracker_2", # nové
+    "habit_tracker_1",
+    "habit_tracker_2",
     "blog",
     "tailwind",
     "theme",
+    "users",
     "django_browser_reload",
 ]
 TAILWIND_APP_NAME = 'theme'
+
+# URL adresa pro přihlášení
+# Když se nepřihlášený uživatel pokusí přistoupit k chráněné stránce, bude přesměrován sem
+LOGIN_URL = '/users/login/'
+
+# URL adresa pro registraci nových uživatelů
+# Používá se pro odkazy na registrační formulář
+REGISTER_URL = '/users/register/'
+
+# URL adresa pro přesměrování po odhlášení
+# Po úspěšném odhlášení bude uživatel přesměrován na přihlašovací stránku
+LOGOUT_REDIRECT_URL = '/users/login/'
+
+# URL adresa pro přesměrování po přihlášení
+# Po úspěšném přihlášení bude uživatel přesměrován na hlavní stránku
+# Prázdné '/' znamená kořenovou URL adresu webu (homepage)
+LOGIN_REDIRECT_URL = '/'
+
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
@@ -59,6 +78,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "middleware.custom.LoginRequiredMiddleware", # nové
+    "middleware.custom.Redirect404Middleware", # nové
+
     "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 

@@ -4,43 +4,66 @@
 	{% include './blog_navigation.html' %}
 {% endblock %}
 
-{% block title %}
-	{% if category %}Upravit{% else %}Přidat{% endif %} kategorii
-{% endblock %}
+{% block title %} Seznam příspěvků {% endblock %}
 
 {% block content %}
-	<div class="max-w-4xl mx-auto my-8 p-6 bg-white rounded-lg">
-		<div class="flex justify-between items-center mb-4">
-			<h2 class="text-1xl font-bold text-gray-800">Seznam kategorií</h2>
-			<a href="{% url 'blog:category_create' %}" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-				Nová kategorie
-			</a>
-		</div>
+<div class="container mx-auto px-4">
+	<h1 class="text-2xl mb-4">Seznam příspěvků</h1>
 
-		{% if categories %}
-		<ul class="space-y-2">
-			{% for category in categories %}
-			<li class="mt-2 flex justify-between items-center p-3 bg-blue-100 rounded-md hover:bg-blue-200">
-				<span class="text-lg font-medium">{{ category.name }}</span>
-
-				<!-- Edit Button as an Anchor -->
-				<div class="flex space-x-2">
-					<a href="{% url 'blog:category_edit' category.id %}" class="px-3 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600">
-						Upravit
-					</a>
-
-					<!-- Delete Button as an Anchor -->
-					<a href="{% url 'blog:category_delete' category.id %}"
-						 class="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-						 onclick="return confirm('Opravdu chcete smazat tuto kategorii?');">
-						Smazat
-					</a>
-				</div>
-			</li>
-		</ul>
-        {% endfor %}
-		{% else %}
-			<p class="text-gray-500">Žádné kategorie nejsou k dispozici.</p>
-		{% endif %}
+	{% if user.is_staff %}
+	<div class="mb-4">
+		<a href="{% url 'blog:post_create' %}" class="bg-blue-500 text-white px-4 py-2 rounded">
+			Nový příspěvek
+		</a>
 	</div>
+	{% endif %}
+
+	<form method="get" class="mb-6">
+		<label for="category" class="block text-sm font-semibold text-gray-700 mb-2">Kategorie:</label>
+		<select name="category" id="category"
+			class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+			<option value="">-- Všechny kategorie --</option>
+			{% if categories %}
+			{% for category in categories %}
+			<option value="{{ category.id }}" {% if category.id|stringformat:"s" == request.GET.category %}selected{% endif %}>
+				{{ category.name }}
+			</option>
+			{% endfor %}
+			{% else %}
+			<option disabled>Žádné kategorie k dispozici</option>
+			{% endif %}
+		</select>
+		<button type="submit"
+			class="mt-4 w-full p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+			Filtrovat
+		</button>
+	</form>
+
+	<ul class="space-y-4">
+		{% for post in posts %}
+		<li class="bg-white p-4 rounded-md shadow-sm hover:shadow-lg transition-shadow duration-200">
+			<a href="{% url 'blog:post_detail' pk=post.pk %}" class="text-xl font-semibold text-blue-600 hover:text-blue-800">
+				{{ post.title }}
+			</a>
+			<p class="text-sm text-gray-500">{{ post.created_at }}</p>
+			<div class="mt-2">
+				<a href="{% url 'blog:post_detail' post.pk %}" class="text-blue-500">
+					Číst více
+				</a>
+				
+				{% if user.is_staff %}
+				<a href="{% url 'blog:post_edit' post.pk %}" class="text-yellow-500 ml-2">
+					Upravit
+				</a>
+				<a href="{% url 'blog:post_delete' post.pk %}" 
+				   class="text-red-500 ml-2"
+				   onclick="return confirm('Opravdu chcete smazat tento příspěvek?')">
+					Smazat
+				</a>
+				{% endif %}
+			</div>
+		</li>
+		{% endfor %}
+	</ul>
+</div>
 {% endblock %}

@@ -1,18 +1,23 @@
-<!DOCTYPE html>
-<html lang="cs">
+{% extends 'base.html' %}
 
-<head>
-	<meta charset="UTF-8">
-	<title>Rozcestník</title>
-</head>
+{% block navigation %}
+	{% include './navigation.html' %}
+{% endblock %}
 
-<body>
-	<h1>Rozcestník</h1>
-	<ul>
-		<li><a href="{% url 'hello_world:index' %}">HelloWorld</a></li>
-		<li><a href="{% url 'habit_tracker_1:index' %}">HabitTracker</a></li>
-		<li><a href="{% url 'habit_tracker_2:index' %}">HabitTracker 2</a></li>
-		<li><a href="{% url 'blog:post_list' %}">Blog</a></li>
-	</ul>
-</body>
-</html>
+{% block content %}
+<h1 class="text-3xl font-semibold text-gray-900 mb-6">Rozcestník</h1>
+<ul class="space-y-4">
+	<li>
+		<a href="{% url 'hello_world:index' %}" class="text-lg text-blue-500 hover:text-blue-700 transition duration-300">HelloWorld</a>
+	</li>
+	<li>
+		<a href="{% url 'habit_tracker_1:index' %}" class="text-lg text-blue-500 hover:text-blue-700 transition duration-300">Habit Tracker 1</a>
+	</li>
+	<li>
+		<a href="{% url 'habit_tracker_2:index' %}" class="text-lg text-blue-500 hover:text-blue-700 transition duration-300">Habit Tracker 2</a>
+	</li>
+	<li>
+		<a href="{% url 'blog:post_list' %}" class="text-lg text-blue-500 hover:text-blue-700 transition duration-300">Blog</a>
+	</li>
+</ul>
+{% endblock %}
