@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Post, Category
 from .forms import PostForm, CategoryForm
-from django.contrib.auth.decorators import user_passes_test
+from .decorator import group_required
 
 
 def is_staff_user(user):
@@ -43,6 +43,8 @@ def post_detail(request, pk):
 # Vytvoření nového příspěvku
 # Zpracovává jak GET (zobrazení formuláře) tak POST (uložení dat)
 # Po úspěšném vytvoření přesměruje na seznam příspěvků
+
+@group_required('maintainer')
 def post_create(request):
 	if request.method == "POST":
 		# Vytvoření formuláře s daty z POST requestu
@@ -60,6 +62,7 @@ def post_create(request):
 # Úprava existujícího příspěvku
 # Po úspěšné editaci přesměruje zpět na editační formulář
 # Pokud příspěvek neexistuje, vrátí 404
+@group_required('maintainer')
 def post_edit(request, pk):
 	# Načtení existujícího příspěvku nebo 404
 	post = get_object_or_404(Post, pk=pk)
@@ -81,6 +84,7 @@ def post_edit(request, pk):
 
 # Smazání příspěvku a přesměrování na seznam
 # Pokud příspěvek neexistuje, vrátí 404
+@group_required('maintainer')
 def post_delete(request, pk):
 	# Načtení a smazání příspěvku
 	post = get_object_or_404(Post, pk=pk)
@@ -89,7 +93,7 @@ def post_delete(request, pk):
 	return redirect("blog:post_list")
 
 
-@user_passes_test(is_staff_user)
+@group_required('maintainer')
 def category_list(request):
 	# Načtení všech kategorií
 	categories = Category.objects.all()
@@ -99,7 +103,7 @@ def category_list(request):
 
 # Detail kategorie podle jména
 # Pokud kategorie neexistuje, vrátí 404
-@user_passes_test(is_staff_user)
+@group_required('maintainer')
 def category_detail(request, pk):
 	# Načtení kategorie podle jména nebo 404
 	category = get_object_or_404(Category, name=pk)
@@ -108,6 +112,7 @@ def category_detail(request, pk):
 # Vytvoření nové kategorie
 # Po vytvoření přesměruje na editaci této kategorie
 # Zobrazuje také seznam všech existujících kategorií
+@group_required('maintainer')
 def category_create(request):
 	if request.method == "POST":
 		# Zpracování dat z formuláře
@@ -131,6 +136,7 @@ def category_create(request):
 # Úprava existující kategorie podle ID
 # Po úspěšné editaci zůstává na stejné stránce
 # Pokud kategorie neexistuje, vrátí 404
+@group_required('maintainer')
 def category_edit(request, pk):
 	# Načtení kategorie podle ID
 	category = get_object_or_404(Category, pk=pk)
@@ -153,6 +159,7 @@ def category_edit(request, pk):
 
 # Smazání kategorie a přesměrování na seznam kategorií
 # Pokud kategorie neexistuje, vrátí 404
+@group_required('maintainer')
 def category_delete(request, pk):
 	# Načtení a smazání kategorie
 	category = get_object_or_404(Category, pk=pk)

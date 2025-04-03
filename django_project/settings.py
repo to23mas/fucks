@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     "tailwind",
     "theme",
     "users",
-    "django_browser_reload",
+    # "django_browser_reload",
 ]
 TAILWIND_APP_NAME = 'theme'
 
@@ -81,7 +81,7 @@ MIDDLEWARE = [
     "middleware.custom.LoginRequiredMiddleware", # nové
     "middleware.custom.Redirect404Middleware", # nové
 
-    "django_browser_reload.middleware.BrowserReloadMiddleware",
+    # "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 
 ROOT_URLCONF = "django_project.urls"

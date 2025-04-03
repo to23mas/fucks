@@ -9,5 +9,5 @@ urlpatterns = [
     path("habit_tracker_2/", include("habit_tracker_2.urls")),
     path("blog/", include("blog.urls")),
     path("users/", include("users.urls")),
-    path("__reload__/", include("django_browser_reload.urls")),
+    # path("__reload__/", include("django_browser_reload.urls")),
 ]
