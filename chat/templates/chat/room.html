@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block navigation %}
+	{% include './chat_navigation.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- 
+            Hlavní chat log textarea:
+            - readonly = uživatel nemůže editovat historii
+            - resize-none = uživatel nemůže měnit velikost
+            - h-96 = fixní výška pro scrollování
+            - focus:outline-none = odstraní default browser outline při fokusu
+            - focus:border-blue-500 = modrý border při fokusu pro lepší UX
+        -->
+        <textarea id="chat-log" class="w-full h-96 p-4 mb-4 border rounded-lg focus:outline-none focus:border-blue-500 resize-none" readonly></textarea>
+
+        <!-- 
+            Input container s flexbox layoutem:
+            - flex = aktivuje flexbox
+            - gap-4 = mezera mezi input a button
+        -->
+        <div class="flex gap-4">
+            <!-- 
+                Text input pro zprávy:
+                - flex-1 = zabere všechen zbývající prostor
+                - placeholder = nápověda pro uživatele
+            -->
+            <input id="chat-message-input" type="text" class="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:border-blue-500" placeholder="Type a message...">
+            <!-- 
+                Send button:
+                - hover efekt pro lepší interaktivitu
+                - bg-blue-500/600 = moderní modrá barva s hover stavem
+            -->
+            <button id="chat-message-submit" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 focus:outline-none">
+                Send
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Reference na chat log textarea pro opakované použití
+    const chatLog = document.querySelector('#chat-log');
+
+    // Inicializace WebSocket připojení:
+    // - používá window.location.host pro správnou doménu v různých prostředích
+    // - připojuje se do místnosti 'general'
+    // - protokol 'ws://' pro development (v produkci by mělo být 'wss://')
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/chat/general'
+        + '/'
+    );
+
+    // Handler pro příchozí zprávy:
+    // - parsuje JSON data z WebSocket
+    // - přidává časové razítko v lokálním formátu
+    // - formátuje zprávu s username a časem
+    // - zajišťuje správné odsazení zpráv v chat logu
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const timestamp = new Date().toLocaleTimeString();
+        const formattedMessage = `[${timestamp}] ${data.username}: ${data.message}`;
+        
+        // Speciální handling pro první zprávu (bez \n)
+        if (chatLog.value === '') {
+            chatLog.value = formattedMessage;
+        } else {
+            chatLog.value = chatLog.value + '\n' + formattedMessage;
+        }
+    };
+
+    // Handler pro neočekávané uzavření WebSocket spojení
+    // Loguje chybu do konzole pro debugging
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    // Automatický focus na input pole pro okamžité psaní
+    document.querySelector('#chat-message-input').focus();
+    
+    // Enter key handler pro pohodlné odesílání
+    // Simuluje klik na tlačítko při stisku Enter
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.key === 'Enter') {
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    // Click handler pro odeslání zprávy:
+    // - získá text z input pole
+    // - zkontroluje že není prázdný (trim odstraní whitespace)
+    // - odešle přes WebSocket jako JSON
+    // - vyčistí input pro další zprávu
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        if (message.trim()) {
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+            messageInputDom.value = '';
+        }
+    };
+</script>
+{% endblock %}

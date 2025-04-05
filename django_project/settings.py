@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,10 +28,21 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+ASGI_APPLICATION = "django_project.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}
 
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -47,6 +59,7 @@ INSTALLED_APPS = [
     "users",
     "birthday",
     "django_crontab",
+    "chat",
     # "django_browser_reload",
 ]
 TAILWIND_APP_NAME = 'theme'
@@ -88,7 +101,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "django_project.urls"
 
-import os
 
 TEMPLATES = [
     {
@@ -126,17 +138,17 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 CRONJOBS = [
-    # Každý den o půlnoci kontroluje narozeniny a posílá upozornění
-    ('0 0 * * *', 'birthday.cron.send_birthday_emails'),
-
-    # Testovací úloha spouštěná každou minutu
-    # Slouží pro ověření, že cron správně běží
-    ('* * * * *', 'birthday.cron.test_cron_job'),
-
-    # Testovací odesílání emailů každou minutu
-    # Pouze pro vývojové účely
-    ('* * * * *', 'birthday.mail.test_mail'),
-    ('0 0 * * *', 'birthday.cron.send_nameday_emails'),
+    # # Každý den o půlnoci kontroluje narozeniny a posílá upozornění
+    # ('0 0 * * *', 'birthday.cron.send_birthday_emails'),
+    #
+    # # Testovací úloha spouštěná každou minutu
+    # # Slouží pro ověření, že cron správně běží
+    # ('* * * * *', 'birthday.cron.test_cron_job'),
+    #
+    # # Testovací odesílání emailů každou minutu
+    # # Pouze pro vývojové účely
+    # ('* * * * *', 'birthday.mail.test_mail'),
+    # ('0 0 * * *', 'birthday.cron.send_nameday_emails'),
 ]
 CRONTAB_COMMAND_SUFFIX = '>> /var/log/cron.log 2>&1'  # napomáhá správnému logování
 

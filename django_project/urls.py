@@ -10,5 +10,6 @@ urlpatterns = [
     path("blog/", include("blog.urls")),
     path("users/", include("users.urls")),
     path("birthday/", include("birthday.urls")),
+    path("chat/", include("chat.urls")),
     # path("__reload__/", include("django_browser_reload.urls")),
 ]

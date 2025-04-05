@@ -16,6 +16,15 @@ services:
       timeout: 5s    # Maximální doba čekání na odpověď
       retries: 5     # Počet opakování testu před označením databáze jako nedostupné
 
+  redis:
+    image: redis:7
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   database-migration:
     build: .
@@ -49,6 +58,9 @@ services:
     depends_on:
       database-migration:
         condition: service_completed_successfully
+      redis: #nové
+        condition: service_healthy #nové
+
 # Definice svazku pro uchování dat databáze
 volumes:
   postgres_data:
