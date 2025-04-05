@@ -8,46 +8,47 @@ services:
       POSTGRES_DB: ${DATABASE}             # Název databáze (z .env souboru)
     ports:
       - 5432:5432  # Mapování portu PostgreSQL na hostitelský systém
-    volumes:
-      - postgres_data:/var/lib/postgresql/data  # Uchování dat databáze i po restartu kontejneru
+    # volumes:
+    #   - postgres_data:/var/lib/postgresql/data  # Uchování dat databáze i po restartu kontejneru
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "${DATABASE_USER}", "-d", "${DATABASE}"]  # Kontrola dostupnosti DB
       interval: 10s  # Kontrola se provádí každých 10 sekund
       timeout: 5s    # Maximální doba čekání na odpověď
       retries: 5     # Počet opakování testu před označením databáze jako nedostupné
 
-  # Služba pro migrace databáze (Django)
+
   database-migration:
-    build: .  # Použije Dockerfile ze stejné složky
+    build: .
     volumes:
-      - ./:/usr/src/app  # Mapování lokální složky app do kontejneru
+      - ./:/usr/src/app
     env_file:
-      - .env  # Načtení proměnných prostředí z .env souboru
-    command: >  # Příkaz k provedení migrací v Django
+      - .env
+    command: >
       sh -c "
              python manage.py makemigrations &&
              python manage.py migrate &&
-             python manage.py createsuperuser --username admin --email admin@admin.com --noinput ;echo 0"
+             python manage.py createsuperuser --username admin --email muj_osobni_email@gmail.com --noinput ; echo 0"
     depends_on:
       database:
-        condition: service_healthy  # Spustí se až po ověření, že databáze je dostupná
-
+        condition: service_healthy
   # Služba pro webovou aplikaci
+  #
   web:
-    build: .  # Použije Dockerfile ze stejné složky
+    build: .
     command: sh -c "
-      python manage.py runserver 0.0.0.0:80"  # Spustí Django server na portu 80
+      service cron start &&
+      python manage.py crontab add &&
+      python manage.py runserver 0.0.0.0:80"
     volumes:
-      - ./:/usr/src/app    # Mapování aplikace do kontejneru
-      - ./public/:/usr/src/public  # Mapování veřejné složky
+      - ./:/usr/src/app
+      - ./public/:/usr/src/public
     ports:
-      - 80:80  # Expozice webového serveru na portu 80
+      - 80:80
     env_file:
-      - .env  # Načtení environmentálních proměnných
+      - .env
     depends_on:
       database-migration:
-        condition: service_completed_successfully  # Spustí se až po úspěšném dokončení migrací
-
+        condition: service_completed_successfully
 # Definice svazku pro uchování dat databáze
 volumes:
   postgres_data:

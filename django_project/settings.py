@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     "tailwind",
     "theme",
     "users",
+    "birthday",
+    "django_crontab",
     # "django_browser_reload",
 ]
 TAILWIND_APP_NAME = 'theme'
@@ -106,9 +108,37 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "django_project.wsgi.application"
 
-
+# Použití SMTP backendu pro odesílání skutečných emailů
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# SMTP server Gmailu (lze změnit podle poskytovatele emailu)
+EMAIL_HOST = 'smtp.gmail.com'
+# Port pro TLS šifrovanou komunikaci
+EMAIL_PORT = 587
+# Aktivace TLS šifrování pro bezpečnou komunikaci
+EMAIL_USE_TLS = True
+# Přihlašovací email - načítá se z proměnných prostředí
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+# Heslo k emailu nebo aplikační heslo pro Gmail - načítá se z proměnných prostředí
+# Pro Gmail je nutné použít aplikační heslo kvůli dvoufázovému ověření
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+# Výchozí emailová adresa odesílatele - používá stejný email jako pro přihlášení
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+CRONJOBS = [
+    # Každý den o půlnoci kontroluje narozeniny a posílá upozornění
+    ('0 0 * * *', 'birthday.cron.send_birthday_emails'),
+
+    # Testovací úloha spouštěná každou minutu
+    # Slouží pro ověření, že cron správně běží
+    ('* * * * *', 'birthday.cron.test_cron_job'),
+
+    # Testovací odesílání emailů každou minutu
+    # Pouze pro vývojové účely
+    ('* * * * *', 'birthday.mail.test_mail'),
+    ('0 0 * * *', 'birthday.cron.send_nameday_emails'),
+]
+CRONTAB_COMMAND_SUFFIX = '>> /var/log/cron.log 2>&1'  # napomáhá správnému logování
 
 DATABASES = {
 	"default": {
