@@ -26,20 +26,6 @@ services:
       timeout: 5s
       retries: 5
 
-  database-migration:
-    build: .
-    volumes:
-      - ./:/usr/src/app
-    env_file:
-      - .env
-    command: >
-      sh -c "
-             python manage.py makemigrations &&
-             python manage.py migrate &&
-             python manage.py createsuperuser --username admin --email muj_osobni_email@gmail.com --noinput ; echo 0"
-    depends_on:
-      database:
-        condition: service_healthy
   # Služba pro webovou aplikaci
   #
   web:
@@ -60,6 +46,26 @@ services:
         condition: service_completed_successfully
       redis: #nové
         condition: service_healthy #nové
+
+  database-migration:
+    build: .
+    volumes:
+      - ./:/usr/src/app
+    env_file:
+      - .env
+    command: >
+      sh -c "
+             python manage.py makemigrations &&
+             python manage.py migrate &&
+             python manage.py loaddata books && # nové
+             python manage.py createsuperuser --username admin --email to23mas@gmail.com --noinput ;
+             echo \"migrations successful\""
+    depends_on:
+      database:
+        condition: service_healthy
+
+
+
 
 # Definice svazku pro uchování dat databáze
 volumes:

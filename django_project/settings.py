@@ -60,6 +60,10 @@ INSTALLED_APPS = [
     "birthday",
     "django_crontab",
     "chat",
+    "library_rest",
+    "library_graph",
+    "library_rpc",
+    'graphene_django',
     # "django_browser_reload",
 ]
 TAILWIND_APP_NAME = 'theme'
@@ -204,3 +208,6 @@ STATICFILES_DIRS = [BASE_DIR / "public" / "static"]
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+GRAPHENE = {
+    'SCHEMA': 'library_graph.schema.schema'
+}
