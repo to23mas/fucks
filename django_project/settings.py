@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "library_rest",
     "library_graph",
     "library_rpc",
+    "hangman",
     'graphene_django',
     # "django_browser_reload",
 ]

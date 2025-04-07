@@ -11,6 +11,7 @@ urlpatterns = [
     path("users/", include("users.urls")),
     path("birthday/", include("birthday.urls")),
     path("chat/", include("chat.urls")),
+    path("hangman/", include("hangman.urls")),
     path("library_rest/", include("library_rest.urls")),
     path("library_graph/", include("library_graph.urls")),
     path("library_rpc/", include("library_rpc.urls")),
