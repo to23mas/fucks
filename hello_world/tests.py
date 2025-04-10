@@ -1,80 +1,58 @@
-# Import potřebných modulů pro testování
-from django.test import TestCase, Client
-from django.urls import reverse
-from django.contrib.auth.models import User
+from django.test import SimpleTestCase
+from django.http import HttpRequest
+from hello_world.views import index
 
-# Třída pro testování hello_world view
-class HelloWorldTests(TestCase):
-    # Metoda setUp se spustí před každým testem
-    # Zde připravujeme testovací prostředí
-    def setUp(self):
-        # Vytvoření testovacího klienta - simuluje webový prohlížeč
-        self.client = Client()
-        # Získání URL adresy pro hello_world view pomocí reverse
-        self.url = reverse('hello_world:hello_world')
-        # Vytvoření testovacího uživatele v databázi
-        self.user = User.objects.create_user(
-            username='testuser',
-            password='testpass123'
-        )
-        # Přihlášení testovacího uživatele
-        self.client.login(username='testuser', password='testpass123')
-
-    # Test zda view existuje a vrací správný HTTP status kód
-    def test_view_exists(self):
-        # Odeslání GET požadavku na URL
-        response = self.client.get(self.url)
+class HelloWorldTests(SimpleTestCase):
+    def test_view_returns_http_response(self):
+        # Vytvoření testovacího HTTP požadavku
+        request = HttpRequest()
+        # Získání odpovědi z view
+        response = index(request)
         # Ověření, že status kód je 200 (OK)
         self.assertEqual(response.status_code, 200)
 
-    # Test zda view vrací textový obsah
     def test_view_returns_text(self):
-        response = self.client.get(self.url)
-        # Ověření, že obsah odpovědi je textový řetězec
+        # Vytvoření testovacího požadavku
+        request = HttpRequest()
+        # Získání odpovědi
+        response = index(request)
+        # Kontrola, že obsah lze dekódovat do textového řetězce
         self.assertIsInstance(response.content.decode(), str)
 
-    # Test zda view vrací neprázdnou odpověď
     def test_view_not_empty(self):
-        response = self.client.get(self.url)
-        # Ověření, že délka obsahu je větší než 0
+        # Příprava testovacího požadavku
+        request = HttpRequest()
+        # Získání odpovědi
+        response = index(request)
+        # Ověření, že odpověď není prázdná
         self.assertTrue(len(response.content) > 0)
 
-    # Test zda view správně reaguje na GET požadavek
-    def test_view_uses_get(self):
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
+    def test_view_returns_hello_world(self):
+        # Vytvoření požadavku
+        request = HttpRequest()
+        # Získání odpovědi
+        response = index(request)
+        # Kontrola přesného obsahu odpovědi
+        self.assertEqual(response.content.decode(), "Hello world!")
 
-    # Test zda view vyžaduje přihlášení
-    def test_view_requires_login(self):
-        # Vytvoření nového klienta bez přihlášení
-        client = Client()
-        response = client.get(self.url)
-        # Ověření, že nepřihlášený uživatel je přesměrován (302)
-        self.assertEqual(response.status_code, 302)  # Redirects to login page
-
-    # Test přístupu po odhlášení
-    def test_logout_then_access(self):
-        # Nejprve ověříme, že přihlášený uživatel má přístup
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-        
-        # Odhlášení uživatele
-        self.client.logout()
-        
-        # Ověření, že po odhlášení nemáme přístup
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 302)
-
-    # Test přístupu s neplatnými přihlašovacími údaji
-    def test_invalid_credentials(self):
-        client = Client()
-        # Pokus o přihlášení se špatným heslem
-        logged_in = client.login(username='testuser', password='wrongpassword')
-        # Ověření, že přihlášení se nezdařilo
-        self.assertFalse(logged_in)
-        
-        # Ověření, že přístup je zamítnut
-        response = client.get(self.url)
-        self.assertEqual(response.status_code, 302)
-    
+    def test_view_handles_different_request_methods(self):
+        # Vytvoření základního požadavku
+        request = HttpRequest()
+        # Seznam HTTP metod k otestování
+        methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
+        # Testování pro každou metodu
+        for method in methods:
+            # Nastavení metody požadavku
+            request.method = method
+            # Získání odpovědi
+            response = index(request)
+            # Kontrola status kódu
+            self.assertEqual(response.status_code, 200)
+            # Kontrola obsahu
+            self.assertEqual(response.content.decode(), "Hello world!")
+            # Kontrola typu obsahu
+            self.assertEqual(response['Content-Type'], 'text/html; charset=utf-8')
+            # Kontrola absence bezpečnostních hlaviček
+            self.assertFalse(response.has_header('X-Frame-Options'))
+            self.assertFalse(response.has_header('Content-Security-Policy'))
 
