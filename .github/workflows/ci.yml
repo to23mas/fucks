@@ -1,0 +1,182 @@
+# Název workflow - zobrazuje se v GitHub Actions
+name: CI
+
+# Spouštění workflow při:
+# - push do jakékoliv větve
+# - vytvoření pull requestu
+on:
+  push:
+  pull_request:
+
+# Definice jednotlivých jobů (úloh)
+jobs:
+  # Job pro kontrolu JavaScript kódu pomocí ESLint
+  eslint:
+    name: Run ESLint
+    # Spuštění na nejnovější verzi Ubuntu
+    runs-on: ubuntu-latest
+    # Nastavení výchozího pracovního adresáře
+    defaults:
+      run:
+        working-directory: ./app-frontend
+
+    # Kroky jobu
+    steps:
+    # Stažení kódu z repozitáře
+    - uses: actions/checkout@v4
+    
+    # Nastavení Node.js prostředí
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        # Verze Node.js
+        node-version: '20'
+        # Povolení cache pro npm
+        cache: 'npm'
+        # Cesta k souboru pro kontrolu změn v závislostech
+        cache-dependency-path: 'app-frontend/package-lock.json'
+
+    # Instalace závislostí
+    - name: Install Dependencies
+      run: npm ci
+      
+    # Spuštění ESLint kontroly
+    - name: Run ESLint
+      run: npm run lint
+
+  # Job pro kontrolu Python kódu pomocí PyLint
+  pylint:
+    name: Run PyLint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    # Nastavení Python prostředí
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        # Verze Pythonu
+        python-version: '3.10'
+        # Povolení cache pro pip
+        cache: 'pip'
+        # Cesta k souboru se závislostmi
+        cache-dependency-path: './requirements.txt'
+
+    # Instalace potřebných balíčků
+    - name: Install Dependencies
+      run: |
+        # Aktualizace pip
+        python -m pip install --upgrade pip
+        # Instalace PyLint
+        pip install pylint
+        # Instalace závislostí projektu
+        pip install -r requirements.txt
+        
+    # Spuštění PyLint kontroly
+    - name: Run PyLint
+      run: |
+        # Kontrola existence konfiguračního souboru
+        if [ -f .pylintrc ]; then
+          # Spuštění PyLint s vlastní konfigurací
+          pylint --rcfile=.pylintrc **/*.py
+        else
+          # Varování a spuštění s výchozí konfigurací
+          echo "Warning: .pylintrc not found, using default configuration"
+          pylint **/*.py
+        fi
+
+  # Job pro spuštění Django testů
+  django-tests:
+    name: Run Django Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+        cache-dependency-path: './requirements.txt'
+
+    # Příprava konfiguračního souboru .env
+    - name: Copy .env.local to .env
+      run: |
+        # Kontrola existence lokálního konfiguračního souboru
+        if [ -f .env.local ]; then
+          # Kopírování do .env
+          cp .env.local .env
+          echo ".env.local file copied to .env"
+        else
+          # Vytvoření základního .env souboru pro testy
+          echo "DEBUG=True" > .env
+          echo "SECRET_KEY=test_secret_key" >> .env
+          echo "ALLOWED_HOSTS=localhost,127.0.0.1" >> .env
+          echo "Created basic .env file for testing"
+        fi
+
+    # Instalace závislostí
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # Spuštění testů s podrobným výstupem
+    - name: Run Tests
+      run: |
+        python manage.py test -v 2
+
+  # Job pro sestavení a spuštění Docker kontejnerů
+  docker:
+    name: Docker Compose Build
+    # Čeká na dokončení předchozích jobů
+    needs: [eslint, pylint, django-tests]
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    # Nastavení Docker Buildx pro efektivnější sestavení
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    # Příprava konfiguračního souboru .env
+    - name: Copy .env.local to .env
+      run: |
+        if [ -f .env.local ]; then
+          cp .env.local .env
+          echo ".env.local file copied to .env"
+        else
+          echo "Warning: .env.local file not found"
+          exit 1
+        fi
+
+    # Sestavení a spuštění Docker kontejnerů
+    - name: Build with Docker Compose
+      run: |
+        # Sestavení kontejnerů
+        docker compose build
+        # Spuštění kontejnerů na pozadí
+        docker compose up -d
+        
+    # Kontrola stavu běžících kontejnerů
+    - name: Check running containers
+      run: docker compose ps
+      
+    # Zobrazení logů kontejnerů
+    - name: Check container logs
+      run: docker compose logs
+      
+    # Úklid - zastavení a odstranění kontejnerů
+    # Spustí se vždy, i když předchozí kroky selžou
+    - name: Clean up
+      if: always()
+      run: docker compose down 
